@@ -1,10 +1,16 @@
 import { buildApp } from "./app.js";
+import { createCognitoTokenVerifier } from "./auth/cognito.js";
 import { loadConfig } from "./config.js";
 import { createPrismaClient } from "./db.js";
 
 const config = loadConfig();
 const prisma = createPrismaClient();
-const app = buildApp({ prisma });
+const tokenVerifier = createCognitoTokenVerifier(config.auth);
+const app = buildApp({
+  corsOrigin: config.corsOrigin,
+  prisma,
+  tokenVerifier
+});
 
 try {
   await app.listen({

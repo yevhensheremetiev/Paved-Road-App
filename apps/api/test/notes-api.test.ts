@@ -1,15 +1,47 @@
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
+import type { TokenVerifier, VerifiedTokenClaims } from "../src/auth/auth.js";
 import { createPrismaClient, type Prisma } from "../src/db.js";
 
 const demoCognitoSub = "local-demo-user";
 const otherCognitoSub = "other-demo-user";
+const validDemoToken = "valid-demo-token";
+const validOtherToken = "valid-other-token";
 
 let app: FastifyInstance | undefined;
 let prisma: Prisma | undefined;
 let ownNoteId: string;
 let otherNoteId: string;
+
+const tokenClaims = new Map<string, VerifiedTokenClaims>([
+  [
+    validDemoToken,
+    {
+      sub: demoCognitoSub,
+      email: "demo@example.com"
+    }
+  ],
+  [
+    validOtherToken,
+    {
+      sub: otherCognitoSub,
+      email: "other@example.com"
+    }
+  ]
+]);
+
+const fakeTokenVerifier: TokenVerifier = {
+  async verify(token) {
+    const claims = tokenClaims.get(token);
+
+    if (!claims) {
+      throw new Error("Invalid token");
+    }
+
+    return claims;
+  }
+};
 
 async function seedTestData(prismaClient: Prisma) {
   await prismaClient.note.deleteMany();
@@ -49,9 +81,9 @@ async function seedTestData(prismaClient: Prisma) {
   otherNoteId = otherNote.id;
 }
 
-function authHeaders(cognitoSub = demoCognitoSub) {
+function authHeaders(token = validDemoToken) {
   return {
-    "x-demo-user": cognitoSub
+    authorization: `Bearer ${token}`
   };
 }
 
@@ -74,7 +106,7 @@ function getPrisma() {
 beforeEach(async () => {
   prisma = createPrismaClient();
   await seedTestData(prisma);
-  app = buildApp({ logger: false, prisma });
+  app = buildApp({ logger: false, prisma, tokenVerifier: fakeTokenVerifier });
 });
 
 afterEach(async () => {
@@ -116,14 +148,43 @@ describe("notes API", () => {
     });
   });
 
-  it("rejects unknown demo users", async () => {
+  it("rejects invalid bearer tokens", async () => {
     const response = await getApp().inject({
       method: "GET",
       url: "/notes",
-      headers: authHeaders("missing-user")
+      headers: authHeaders("invalid-token")
     });
 
     expect(response.statusCode).toBe(401);
+  });
+
+  it("upserts local users from verified token claims", async () => {
+    await getPrisma().note.deleteMany();
+    await getPrisma().user.deleteMany();
+
+    const response = await getApp().inject({
+      method: "GET",
+      url: "/me",
+      headers: authHeaders()
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      user: {
+        cognitoSub: demoCognitoSub,
+        email: "demo@example.com"
+      }
+    });
+
+    await expect(
+      getPrisma().user.findUniqueOrThrow({
+        where: {
+          cognitoSub: demoCognitoSub
+        }
+      })
+    ).resolves.toMatchObject({
+      email: "demo@example.com"
+    });
   });
 
   it("returns the current authenticated user", async () => {

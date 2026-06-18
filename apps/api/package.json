@@ -11,6 +11,8 @@
   "dependencies": {
     "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
+    "@fastify/cors": "latest",
+    "aws-jwt-verify": "latest",
     "fastify": "latest"
   },
   "devDependencies": {

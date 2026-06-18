@@ -3,8 +3,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo \"TODO: start web dev server\"",
-    "build": "echo \"TODO: build web app\"",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "latest",
+    "aws-amplify": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "vite": "latest"
   }
 }

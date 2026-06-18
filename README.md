@@ -34,10 +34,19 @@ Run the current quality gate:
 pnpm verify
 ```
 
-Start the API locally:
+Start the whole app locally:
 
 ```bash
-pnpm --filter @paved-road/api dev
+pnpm dev
+```
+
+This starts local Postgres with Docker Compose, then runs the API on `http://localhost:3000`
+and the web app on `http://localhost:5173`.
+
+To start only the API and web app without touching Docker:
+
+```bash
+pnpm dev:apps
 ```
 
 ## Planned Architecture
@@ -50,7 +59,8 @@ pnpm --filter @paved-road/api dev
 
 ## Workspace Commands
 
-- `pnpm dev` - runs available development scripts across workspaces.
+- `pnpm dev` - starts local Postgres, API, and web app.
+- `pnpm dev:apps` - starts only the API and web app using `.env`.
 - `pnpm build` - runs available build scripts across workspaces.
 - `pnpm test` - runs available tests across workspaces.
 - `pnpm typecheck` - runs TypeScript project references.
@@ -67,21 +77,52 @@ pnpm --filter @paved-road/api dev
 ## Local Demo Data
 
 The database seed creates a demo user with Cognito subject `local-demo-user` and a couple
-of notes. The API will later use the Cognito subject from verified tokens to map requests
-to an internal `User` record.
+of notes. The API maps verified Cognito token subjects to internal `User` records.
 
 ## API Development
 
-The API currently uses a temporary development auth boundary before Cognito is integrated.
-Send the seeded Cognito subject through `x-demo-user`:
+The API verifies Cognito JWTs server-side. Send Cognito tokens through the standard
+authorization header:
 
 ```bash
-curl -H "x-demo-user: local-demo-user" http://localhost:3000/me
-curl -H "x-demo-user: local-demo-user" http://localhost:3000/notes
+curl -H "Authorization: Bearer <cognito-jwt>" http://localhost:3000/me
+curl -H "Authorization: Bearer <cognito-jwt>" http://localhost:3000/notes
 ```
 
-Requests without a known `x-demo-user` return `401`. The next auth-focused commit will
-replace this internal boundary with server-side Cognito JWT verification.
+Requests without a valid bearer token return `401`. Configure the API with:
+
+- `COGNITO_USER_POOL_ID`
+- `COGNITO_CLIENT_ID`
+
+The local API upserts a `User` record from the verified Cognito token `sub` claim and then
+uses that internal user id for notes queries.
+
+## Cognito Local Setup
+
+Create a Cognito app client for the SPA:
+
+- App type: public client / single-page application.
+- Client secret: disabled.
+- OAuth grant type: authorization code grant.
+- OpenID Connect scopes: `openid`, `email`, `profile`.
+- Allowed callback URL: `http://localhost:5173`.
+- Allowed sign-out URL: `http://localhost:5173`.
+
+Configure local environment variables:
+
+```bash
+VITE_API_URL=http://localhost:3000
+VITE_COGNITO_USER_POOL_ID=<user-pool-id>
+VITE_COGNITO_CLIENT_ID=<app-client-id>
+VITE_COGNITO_DOMAIN=<domain>.auth.<region>.amazoncognito.com
+
+COGNITO_USER_POOL_ID=<user-pool-id>
+COGNITO_CLIENT_ID=<app-client-id>
+CORS_ORIGIN=http://localhost:5173
+```
+
+The SPA redirects to Cognito Hosted UI for login, receives a session after redirect, and
+calls the API with `Authorization: Bearer <Cognito JWT>`.
 
 ## Target Stack
 

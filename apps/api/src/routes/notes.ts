@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import type { AuthenticatedRequest } from "../auth/dev-auth.js";
-import { createAuthPreHandler } from "../auth/dev-auth.js";
+import type { AuthenticatedRequest, TokenVerifier } from "../auth/auth.js";
+import { createAuthPreHandler } from "../auth/auth.js";
 import type { Prisma } from "../db.js";
 
 type CreateNoteBody = {
@@ -56,8 +56,12 @@ function validateCreateNoteBody(body: unknown): CreateNoteValidationResult {
   };
 }
 
-export function registerNotesRoutes(app: FastifyInstance, prisma: Prisma) {
-  const authPreHandler = createAuthPreHandler(prisma);
+export function registerNotesRoutes(
+  app: FastifyInstance,
+  prisma: Prisma,
+  tokenVerifier: TokenVerifier
+) {
+  const authPreHandler = createAuthPreHandler(prisma, tokenVerifier);
 
   app.get(
     "/notes",
