@@ -1,4 +1,7 @@
 node_modules/
+.pnpm-home/
+.pnpm-store/
+*.tsbuildinfo
 dist/
 build/
 .turbo/

@@ -3,7 +3,22 @@
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "echo \"TODO: start local development environment\"",
-    "verify": "echo \"TODO: run lint, typecheck, tests, and migration checks\""
+    "dev": "pnpm --recursive --parallel --if-present dev",
+    "build": "pnpm --recursive --if-present build",
+    "typecheck": "tsc --build --pretty false",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prisma:validate": "pnpm --filter @paved-road/database prisma:validate",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm prisma:validate"
+  },
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "eslint": "latest",
+    "prettier": "latest",
+    "prisma": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest"
   }
 }

@@ -8,4 +8,3 @@ Planned responsibilities:
 - Database migrations
 - Seed data for local development
 - Migration checks for CI/CD
-

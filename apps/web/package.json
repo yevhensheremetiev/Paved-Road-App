@@ -1,0 +1,10 @@
+{
+  "name": "@paved-road/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"TODO: start web dev server\"",
+    "build": "echo \"TODO: build web app\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

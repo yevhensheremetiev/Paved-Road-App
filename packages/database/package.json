@@ -1,0 +1,11 @@
+{
+  "name": "@paved-road/database",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prisma:validate": "DATABASE_URL=postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public prisma validate --config prisma.config.ts",
+    "prisma:migrate:dev": "prisma migrate dev --config prisma.config.ts",
+    "prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

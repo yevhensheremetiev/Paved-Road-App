@@ -9,4 +9,3 @@ Planned resources:
 - Neon Postgres database
 - Amazon Cognito user pool and app client
 - Secrets and environment variable documentation
-
