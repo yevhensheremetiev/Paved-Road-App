@@ -13,6 +13,12 @@ type ValidCreateNoteBody = {
   content: string | null;
 };
 
+const publicNoteSelect = {
+  content: true,
+  id: true,
+  title: true
+} as const;
+
 type CreateNoteValidationResult =
   | {
       ok: true;
@@ -76,7 +82,8 @@ export function registerNotesRoutes(
         },
         orderBy: {
           createdAt: "asc"
-        }
+        },
+        select: publicNoteSelect
       });
 
       return {
@@ -105,7 +112,8 @@ export function registerNotesRoutes(
           userId: user.id,
           title: noteInput.value.title,
           content: noteInput.value.content
-        }
+        },
+        select: publicNoteSelect
       });
 
       return reply.code(201).send({

@@ -6,6 +6,7 @@ import { createPrismaClient, type Prisma } from "../src/db.js";
 
 const demoCognitoSub = "local-demo-user";
 const otherCognitoSub = "other-demo-user";
+const corsOrigin = "http://localhost:5173";
 const validDemoToken = "valid-demo-token";
 const validOtherToken = "valid-other-token";
 
@@ -106,7 +107,7 @@ function getPrisma() {
 beforeEach(async () => {
   prisma = createPrismaClient();
   await seedTestData(prisma);
-  app = buildApp({ logger: false, prisma, tokenVerifier: fakeTokenVerifier });
+  app = buildApp({ corsOrigin, logger: false, prisma, tokenVerifier: fakeTokenVerifier });
 });
 
 afterEach(async () => {
@@ -134,6 +135,22 @@ describe("notes API", () => {
     expect(response.json()).toEqual({
       ok: true
     });
+  });
+
+  it("allows browser preflight requests for deleting notes", async () => {
+    const response = await getApp().inject({
+      headers: {
+        "access-control-request-headers": "authorization",
+        "access-control-request-method": "DELETE",
+        origin: corsOrigin
+      },
+      method: "OPTIONS",
+      url: `/notes/${ownNoteId}`
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers["access-control-allow-methods"]).toContain("DELETE");
+    expect(response.headers["access-control-allow-origin"]).toBe(corsOrigin);
   });
 
   it("rejects requests without authentication", async () => {
@@ -214,7 +231,8 @@ describe("notes API", () => {
 
     expect(response.statusCode).toBe(200);
     expect(body.notes).toHaveLength(1);
-    expect(body.notes[0]).toMatchObject({
+    expect(body.notes[0]).toEqual({
+      content: "Visible to the demo user",
       id: ownNoteId,
       title: "Seeded note"
     });
@@ -234,7 +252,8 @@ describe("notes API", () => {
     const body = response.json();
 
     expect(response.statusCode).toBe(201);
-    expect(body.note).toMatchObject({
+    expect(body.note).toEqual({
+      id: expect.any(String),
       title: "New API note",
       content: "Created through Fastify injection"
     });

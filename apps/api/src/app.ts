@@ -19,6 +19,8 @@ export function buildApp({ corsOrigin, logger = true, prisma, tokenVerifier }: A
 
   if (corsOrigin) {
     void app.register(cors, {
+      allowedHeaders: ["Authorization", "Content-Type"],
+      methods: ["GET", "POST", "DELETE", "OPTIONS"],
       origin: corsOrigin
     });
   }

@@ -30,6 +30,32 @@ button:hover {
   background: #183fae;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+input,
+textarea {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  color: inherit;
+  font: inherit;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #1f4fd8;
+  box-shadow: 0 0 0 3px rgb(31 79 216 / 14%);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
 .app-shell {
   margin: 0 auto;
   max-width: 48rem;
@@ -52,6 +78,98 @@ button:hover {
   padding: 1.5rem;
 }
 
+.section-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.section-header h2,
+.section-header p {
+  margin: 0;
+}
+
+.section-header p {
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.pill {
+  background: #e0e7ff;
+  border-radius: 999px;
+  color: #3730a3;
+  flex: 0 0 auto;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+}
+
+.note-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.note-form label {
+  color: #334155;
+  display: grid;
+  font-weight: 700;
+}
+
+.error-message {
+  color: #b91c1c;
+  font-weight: 700;
+  margin: 0;
+}
+
+.empty-state {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  color: #64748b;
+  margin: 1.5rem 0 0;
+  padding: 1rem;
+}
+
+.note-list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.note-item {
+  align-items: flex-start;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.note-item h3 {
+  margin: 0;
+}
+
+.note-item p {
+  color: #475569;
+  margin: 0.5rem 0 0;
+  white-space: pre-wrap;
+}
+
+.secondary-button {
+  background: #f1f5f9;
+  color: #334155;
+  flex: 0 0 auto;
+}
+
+.secondary-button:hover {
+  background: #e2e8f0;
+}
+
 dt {
   color: #64748b;
   font-size: 0.875rem;
@@ -62,4 +180,12 @@ dt {
 dd {
   margin: 0.25rem 0 0;
   overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .app-header,
+  .note-item,
+  .section-header {
+    display: grid;
+  }
 }
