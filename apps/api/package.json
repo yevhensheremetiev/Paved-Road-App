@@ -3,8 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo \"TODO: start API dev server\"",
-    "build": "echo \"TODO: build API\"",
+    "dev": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "latest",
+    "@prisma/client": "latest",
+    "fastify": "latest"
+  },
+  "devDependencies": {
+    "tsx": "latest",
+    "vitest": "latest"
   }
 }

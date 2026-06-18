@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --recursive --parallel --if-present dev",
     "build": "pnpm --recursive --if-present build",
+    "test": "pnpm --recursive --if-present test",
     "typecheck": "tsc --build --pretty false",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -15,7 +16,7 @@
     "prisma:migrate:dev": "pnpm --filter @paved-road/database prisma:migrate:dev",
     "prisma:migrate:deploy": "pnpm --filter @paved-road/database prisma:migrate:deploy",
     "prisma:validate": "pnpm --filter @paved-road/database prisma:validate",
-    "verify": "pnpm format:check && pnpm lint && pnpm prisma:generate && pnpm typecheck && pnpm prisma:validate"
+    "verify": "pnpm format:check && pnpm lint && pnpm prisma:generate && pnpm typecheck && pnpm prisma:validate && pnpm test"
   },
   "devDependencies": {
     "@eslint/js": "latest",

@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest"
   },
   "devDependencies": {

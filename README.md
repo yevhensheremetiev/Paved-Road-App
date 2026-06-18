@@ -34,6 +34,12 @@ Run the current quality gate:
 pnpm verify
 ```
 
+Start the API locally:
+
+```bash
+pnpm --filter @paved-road/api dev
+```
+
 ## Planned Architecture
 
 - `apps/web` - frontend app.
@@ -46,6 +52,7 @@ pnpm verify
 
 - `pnpm dev` - runs available development scripts across workspaces.
 - `pnpm build` - runs available build scripts across workspaces.
+- `pnpm test` - runs available tests across workspaces.
 - `pnpm typecheck` - runs TypeScript project references.
 - `pnpm lint` - runs ESLint.
 - `pnpm format:check` - checks Prettier formatting.
@@ -62,6 +69,19 @@ pnpm verify
 The database seed creates a demo user with Cognito subject `local-demo-user` and a couple
 of notes. The API will later use the Cognito subject from verified tokens to map requests
 to an internal `User` record.
+
+## API Development
+
+The API currently uses a temporary development auth boundary before Cognito is integrated.
+Send the seeded Cognito subject through `x-demo-user`:
+
+```bash
+curl -H "x-demo-user: local-demo-user" http://localhost:3000/me
+curl -H "x-demo-user: local-demo-user" http://localhost:3000/notes
+```
+
+Requests without a known `x-demo-user` return `401`. The next auth-focused commit will
+replace this internal boundary with server-side Cognito JWT verification.
 
 ## Target Stack
 

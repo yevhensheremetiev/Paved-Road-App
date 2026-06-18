@@ -1,6 +1,16 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const defaultDatabaseUrl =
+  "postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public";
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL ?? defaultDatabaseUrl
+});
+
+const prisma = new PrismaClient({
+  adapter
+});
 
 async function main() {
   const user = await prisma.user.upsert({
