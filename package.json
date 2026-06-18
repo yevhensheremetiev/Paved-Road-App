@@ -1,0 +1,9 @@
+{
+  "name": "paved-road-app",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "echo \"TODO: start local development environment\"",
+    "verify": "echo \"TODO: run lint, typecheck, tests, and migration checks\""
+  }
+}
