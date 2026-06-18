@@ -9,8 +9,13 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "db:reset": "pnpm --filter @paved-road/database db:reset",
+    "db:seed": "pnpm --filter @paved-road/database db:seed",
+    "prisma:generate": "pnpm --filter @paved-road/database prisma:generate",
+    "prisma:migrate:dev": "pnpm --filter @paved-road/database prisma:migrate:dev",
+    "prisma:migrate:deploy": "pnpm --filter @paved-road/database prisma:migrate:deploy",
     "prisma:validate": "pnpm --filter @paved-road/database prisma:validate",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm prisma:validate"
+    "verify": "pnpm format:check && pnpm lint && pnpm prisma:generate && pnpm typecheck && pnpm prisma:validate"
   },
   "devDependencies": {
     "@eslint/js": "latest",
@@ -20,5 +25,10 @@
     "prisma": "latest",
     "typescript": "latest",
     "typescript-eslint": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

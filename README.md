@@ -22,6 +22,12 @@ Start the local Postgres database:
 docker compose up -d postgres
 ```
 
+Apply migrations and seed local demo data:
+
+```bash
+pnpm db:reset
+```
+
 Run the current quality gate:
 
 ```bash
@@ -43,8 +49,19 @@ pnpm verify
 - `pnpm typecheck` - runs TypeScript project references.
 - `pnpm lint` - runs ESLint.
 - `pnpm format:check` - checks Prettier formatting.
+- `pnpm prisma:generate` - generates the Prisma client.
+- `pnpm prisma:migrate:dev` - creates/applies local Prisma migrations.
+- `pnpm prisma:migrate:deploy` - applies existing migrations in deployed environments.
 - `pnpm prisma:validate` - validates the Prisma schema.
+- `pnpm db:seed` - seeds local development data.
+- `pnpm db:reset` - resets the local database, applies migrations, and seeds demo data.
 - `pnpm verify` - runs the baseline local quality gate.
+
+## Local Demo Data
+
+The database seed creates a demo user with Cognito subject `local-demo-user` and a couple
+of notes. The API will later use the Cognito subject from verified tokens to map requests
+to an internal `User` record.
 
 ## Target Stack
 
