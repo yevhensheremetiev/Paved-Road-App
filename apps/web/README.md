@@ -8,4 +8,3 @@ Planned responsibilities:
 - Protected application routes
 - API client that sends Cognito tokens to the backend
 - Production build for Amplify Hosting
-

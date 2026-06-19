@@ -1,0 +1,20 @@
+{
+  "name": "@paved-road/database",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prisma:generate": "DATABASE_URL=\"postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public\" prisma generate --config prisma.config.ts",
+    "prisma:validate": "DATABASE_URL=\"postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public\" prisma validate --config prisma.config.ts",
+    "prisma:migrate:dev": "DATABASE_URL=\"postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public\" prisma migrate dev --config prisma.config.ts",
+    "prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "db:reset": "DATABASE_URL=\"postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public\" prisma migrate reset --config prisma.config.ts --force",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "latest",
+    "@prisma/client": "latest"
+  },
+  "devDependencies": {
+    "prisma": "latest"
+  }
+}

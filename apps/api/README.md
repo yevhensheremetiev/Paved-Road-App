@@ -8,4 +8,3 @@ Planned responsibilities:
 - Expose authenticated HTTP endpoints
 - Use Prisma for database access
 - Provide health and smoke-test endpoints
-

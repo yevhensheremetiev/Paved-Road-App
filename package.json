@@ -3,7 +3,36 @@
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "echo \"TODO: start local development environment\"",
-    "verify": "echo \"TODO: run lint, typecheck, tests, and migration checks\""
+    "dev": "docker compose up -d postgres && dotenv -e .env -- concurrently -n api,web -c blue,green \"pnpm --filter @paved-road/api dev\" \"pnpm --filter @paved-road/web dev\"",
+    "dev:apps": "dotenv -e .env -- concurrently -n api,web -c blue,green \"pnpm --filter @paved-road/api dev\" \"pnpm --filter @paved-road/web dev\"",
+    "build": "pnpm --recursive --if-present build",
+    "test": "pnpm --recursive --if-present test",
+    "typecheck": "tsc --build --pretty false",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:reset": "pnpm --filter @paved-road/database db:reset",
+    "prisma:generate": "pnpm --filter @paved-road/database prisma:generate",
+    "prisma:migrate:dev": "pnpm --filter @paved-road/database prisma:migrate:dev",
+    "prisma:migrate:deploy": "pnpm --filter @paved-road/database prisma:migrate:deploy",
+    "prisma:validate": "pnpm --filter @paved-road/database prisma:validate",
+    "verify": "pnpm format:check && pnpm lint && pnpm prisma:generate && pnpm typecheck && pnpm build && pnpm prisma:validate && pnpm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "concurrently": "latest",
+    "dotenv-cli": "latest",
+    "eslint": "latest",
+    "prettier": "latest",
+    "prisma": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "prisma"
+    ]
   }
 }
