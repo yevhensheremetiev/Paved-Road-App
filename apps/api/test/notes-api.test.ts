@@ -1,10 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../src/app.js";
-import type {
-  TokenVerifier,
-  VerifiedAccessTokenClaims
-} from "../src/auth/auth.js";
+import type { TokenVerifier, VerifiedAccessTokenClaims } from "../src/auth/auth.js";
 import { createPrismaClient, type Prisma } from "../src/db.js";
 
 const demoCognitoSub = "local-demo-user";

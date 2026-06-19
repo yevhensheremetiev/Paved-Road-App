@@ -54,11 +54,7 @@ export async function fetchNotes(apiUrl: string, token: string) {
   return (await response.json()) as NotesResponse;
 }
 
-export async function createNote(
-  apiUrl: string,
-  token: string,
-  input: CreateNoteInput
-) {
+export async function createNote(apiUrl: string, token: string, input: CreateNoteInput) {
   const response = await fetch(`${apiUrl}/notes`, {
     body: JSON.stringify(input),
     headers: {
