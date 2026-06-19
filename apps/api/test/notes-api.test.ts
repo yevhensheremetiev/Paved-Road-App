@@ -66,7 +66,8 @@ async function seedTestData(prismaClient: Prisma) {
     data: {
       userId: demoUser.id,
       title: "Seeded note",
-      content: "Visible to the demo user"
+      content: "Visible to the demo user",
+      urgency: "URGENT"
     }
   });
 
@@ -74,7 +75,8 @@ async function seedTestData(prismaClient: Prisma) {
     data: {
       userId: otherUser.id,
       title: "Other user's note",
-      content: "Not visible to the demo user"
+      content: "Not visible to the demo user",
+      urgency: "ANYTIME"
     }
   });
 
@@ -234,7 +236,8 @@ describe("notes API", () => {
     expect(body.notes[0]).toEqual({
       content: "Visible to the demo user",
       id: ownNoteId,
-      title: "Seeded note"
+      title: "Seeded note",
+      urgency: "URGENT"
     });
   });
 
@@ -245,7 +248,8 @@ describe("notes API", () => {
       headers: authHeaders(),
       payload: {
         title: "New API note",
-        content: "Created through Fastify injection"
+        content: "Created through Fastify injection",
+        urgency: "ANYTIME"
       }
     });
 
@@ -255,7 +259,8 @@ describe("notes API", () => {
     expect(body.note).toEqual({
       id: expect.any(String),
       title: "New API note",
-      content: "Created through Fastify injection"
+      content: "Created through Fastify injection",
+      urgency: "ANYTIME"
     });
 
     const createdNote = await getPrisma().note.findUniqueOrThrow({
@@ -265,6 +270,27 @@ describe("notes API", () => {
     });
 
     expect(createdNote.title).toBe("New API note");
+    expect(createdNote.urgency).toBe("ANYTIME");
+  });
+
+  it("defaults note urgency when it is omitted", async () => {
+    const response = await getApp().inject({
+      method: "POST",
+      url: "/notes",
+      headers: authHeaders(),
+      payload: {
+        title: "Default urgency note",
+        content: "No urgency selected"
+      }
+    });
+
+    const body = response.json();
+
+    expect(response.statusCode).toBe(201);
+    expect(body.note).toMatchObject({
+      title: "Default urgency note",
+      urgency: "CAN_WAIT"
+    });
   });
 
   it("rejects invalid note input", async () => {
@@ -280,6 +306,23 @@ describe("notes API", () => {
     expect(response.statusCode).toBe(400);
     expect(response.json()).toEqual({
       error: "Title is required"
+    });
+  });
+
+  it("rejects invalid note urgency", async () => {
+    const response = await getApp().inject({
+      method: "POST",
+      url: "/notes",
+      headers: authHeaders(),
+      payload: {
+        title: "Invalid urgency",
+        urgency: "SOMEDAY"
+      }
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      error: "Urgency must be one of URGENT, CAN_WAIT, or ANYTIME"
     });
   });
 

@@ -13,7 +13,14 @@ export type AuthSessionState =
       status: "unauthenticated";
     };
 
+const e2eAuthEnabled = import.meta.env.VITE_E2E_AUTH === "true";
+const e2eAuthStateKey = "paved-road-e2e-auth-state";
+
 export function configureAuth(config: WebConfig) {
+  if (e2eAuthEnabled) {
+    return;
+  }
+
   Amplify.configure({
     Auth: {
       Cognito: {
@@ -34,6 +41,20 @@ export function configureAuth(config: WebConfig) {
 }
 
 export async function getAuthSession(): Promise<AuthSessionState> {
+  if (e2eAuthEnabled) {
+    if (window.localStorage.getItem(e2eAuthStateKey) === "unauthenticated") {
+      return {
+        status: "unauthenticated"
+      };
+    }
+
+    return {
+      status: "authenticated",
+      token: import.meta.env.VITE_E2E_AUTH_TOKEN || "e2e-token",
+      username: import.meta.env.VITE_E2E_USERNAME || "E2E User"
+    };
+  }
+
   try {
     const [currentUser, session] = await Promise.all([getCurrentUser(), fetchAuthSession()]);
     const token = session.tokens?.accessToken?.toString();
@@ -57,9 +78,21 @@ export async function getAuthSession(): Promise<AuthSessionState> {
 }
 
 export async function login() {
+  if (e2eAuthEnabled) {
+    window.localStorage.setItem(e2eAuthStateKey, "authenticated");
+    window.location.reload();
+    return;
+  }
+
   await signInWithRedirect();
 }
 
 export async function logout() {
+  if (e2eAuthEnabled) {
+    window.localStorage.setItem(e2eAuthStateKey, "unauthenticated");
+    window.location.reload();
+    return;
+  }
+
   await signOut();
 }

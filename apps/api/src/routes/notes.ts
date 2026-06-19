@@ -6,17 +6,24 @@ import type { Prisma } from "../db.js";
 type CreateNoteBody = {
   title?: unknown;
   content?: unknown;
+  urgency?: unknown;
 };
 
 type ValidCreateNoteBody = {
   title: string;
   content: string | null;
+  urgency: NoteUrgency;
 };
+
+const noteUrgencies = ["URGENT", "CAN_WAIT", "ANYTIME"] as const;
+
+type NoteUrgency = (typeof noteUrgencies)[number];
 
 const publicNoteSelect = {
   content: true,
   id: true,
-  title: true
+  title: true,
+  urgency: true
 } as const;
 
 type CreateNoteValidationResult =
@@ -37,7 +44,7 @@ function validateCreateNoteBody(body: unknown): CreateNoteValidationResult {
     };
   }
 
-  const { title, content } = body as CreateNoteBody;
+  const { title, content, urgency } = body as CreateNoteBody;
 
   if (typeof title !== "string" || title.trim().length === 0) {
     return {
@@ -53,11 +60,19 @@ function validateCreateNoteBody(body: unknown): CreateNoteValidationResult {
     };
   }
 
+  if (urgency !== undefined && !noteUrgencies.includes(urgency as NoteUrgency)) {
+    return {
+      ok: false,
+      error: "Urgency must be one of URGENT, CAN_WAIT, or ANYTIME"
+    };
+  }
+
   return {
     ok: true,
     value: {
       title: title.trim(),
-      content: typeof content === "string" && content.trim().length > 0 ? content.trim() : null
+      content: typeof content === "string" && content.trim().length > 0 ? content.trim() : null,
+      urgency: urgency === undefined ? "CAN_WAIT" : (urgency as NoteUrgency)
     }
   };
 }
@@ -111,7 +126,8 @@ export function registerNotesRoutes(
         data: {
           userId: user.id,
           title: noteInput.value.title,
-          content: noteInput.value.content
+          content: noteInput.value.content,
+          urgency: noteInput.value.urgency
         },
         select: publicNoteSelect
       });
