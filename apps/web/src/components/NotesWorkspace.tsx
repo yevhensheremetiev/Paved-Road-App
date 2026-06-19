@@ -28,6 +28,27 @@ function formatNoteCount(count: number) {
   return `${count} ${label}`;
 }
 
+const urgencyOptions = [
+  { label: "Urgent", value: "URGENT" },
+  { label: "Can wait", value: "CAN_WAIT" },
+  { label: "Anytime", value: "ANYTIME" }
+] as const satisfies readonly { label: string; value: Note["urgency"] }[];
+
+const urgencyBadges = {
+  ANYTIME: {
+    className: "note-urgency note-urgency-anytime",
+    label: "Anytime"
+  },
+  CAN_WAIT: {
+    className: "note-urgency note-urgency-can-wait",
+    label: "Can wait"
+  },
+  URGENT: {
+    className: "note-urgency note-urgency-urgent",
+    label: "Urgent"
+  }
+} as const satisfies Record<Note["urgency"], { className: string; label: string }>;
+
 function WorkspaceHeader() {
   return (
     <header className="app-header">
@@ -83,6 +104,19 @@ function NoteForm({ createNoteMutation, form }: NoteFormProps) {
           value={form.content}
         />
       </label>
+      <label>
+        Urgency
+        <select
+          onChange={(event) => form.setUrgency(event.target.value as Note["urgency"])}
+          value={form.urgency}
+        >
+          {urgencyOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
       {form.error ? <p className="error-message">{form.error}</p> : null}
       {createNoteMutation.isError ? (
@@ -119,7 +153,12 @@ function NotesList({
       {notes.map((note) => (
         <li className="note-item" key={note.id}>
           <div className="note-content">
-            <h3>{note.title}</h3>
+            <div className="note-title-row">
+              <h3>{note.title}</h3>
+              <span className={urgencyBadges[note.urgency].className}>
+                {urgencyBadges[note.urgency].label}
+              </span>
+            </div>
             <p>{note.content ?? "No additional content."}</p>
           </div>
           <button

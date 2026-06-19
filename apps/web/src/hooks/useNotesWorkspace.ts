@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { createNote, deleteNote, fetchCurrentUser, fetchNotes } from "../api";
+import { createNote, deleteNote, fetchCurrentUser, fetchNotes, type NoteUrgency } from "../api";
 import type { AuthSessionState } from "../auth";
 import type { WebConfig } from "../config";
 
@@ -10,6 +10,7 @@ export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession)
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [urgency, setUrgency] = useState<NoteUrgency>("CAN_WAIT");
   const [formError, setFormError] = useState<string | null>(null);
 
   const currentUserQuery = useQuery({
@@ -24,11 +25,13 @@ export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession)
     mutationFn: () =>
       createNote(config.apiUrl, auth.token, {
         content,
-        title
+        title,
+        urgency
       }),
     onSuccess: async () => {
       setTitle("");
       setContent("");
+      setUrgency("CAN_WAIT");
       setFormError(null);
       await queryClient.invalidateQueries({
         queryKey: ["notes"]
@@ -66,7 +69,9 @@ export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession)
       handleSubmit: handleCreateNote,
       setContent,
       setTitle,
-      title
+      setUrgency,
+      title,
+      urgency
     },
     notesQuery
   };

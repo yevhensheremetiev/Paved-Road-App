@@ -10,7 +10,10 @@ export type Note = {
   content: string | null;
   id: string;
   title: string;
+  urgency: NoteUrgency;
 };
+
+export type NoteUrgency = "URGENT" | "CAN_WAIT" | "ANYTIME";
 
 export type NotesResponse = {
   notes: Note[];
@@ -19,6 +22,7 @@ export type NotesResponse = {
 export type CreateNoteInput = {
   content: string;
   title: string;
+  urgency: NoteUrgency;
 };
 
 export async function fetchCurrentUser(apiUrl: string, token: string) {

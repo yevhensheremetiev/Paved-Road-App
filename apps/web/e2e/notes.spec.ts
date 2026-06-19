@@ -4,7 +4,10 @@ type Note = {
   content: string | null;
   id: string;
   title: string;
+  urgency: NoteUrgency;
 };
+
+type NoteUrgency = "URGENT" | "CAN_WAIT" | "ANYTIME";
 
 const apiUrlPattern = "**/api/**";
 const authHeader = "Bearer e2e-token";
@@ -41,11 +44,16 @@ async function mockNotesApi(page: Page, notes: Note[] = []) {
     }
 
     if (url.pathname === "/api/notes" && request.method() === "POST") {
-      const input = (await request.postDataJSON()) as { content: string; title: string };
+      const input = (await request.postDataJSON()) as {
+        content: string;
+        title: string;
+        urgency: NoteUrgency;
+      };
       const note = {
         content: input.content,
         id: `note-${currentNotes.length + 1}`,
-        title: input.title
+        title: input.title,
+        urgency: input.urgency
       };
 
       currentNotes = [note, ...currentNotes];
@@ -109,9 +117,11 @@ test("creates and deletes a note", async ({ page }) => {
 
   await page.getByLabel("Title").fill("Daily plan");
   await page.getByLabel("Content").fill("Ship the Playwright coverage");
+  await page.getByLabel("Urgency").selectOption("URGENT");
   await page.getByRole("button", { name: "Add note" }).click();
 
   await expect(page.getByRole("heading", { name: "Daily plan" })).toBeVisible();
+  await expect(page.getByText("Urgent")).toBeVisible();
   await expect(page.getByText("Ship the Playwright coverage")).toBeVisible();
   await expect(page.getByText("1 note")).toBeVisible();
 
