@@ -36,7 +36,7 @@ export function configureAuth(config: WebConfig) {
 export async function getAuthSession(): Promise<AuthSessionState> {
   try {
     const [currentUser, session] = await Promise.all([getCurrentUser(), fetchAuthSession()]);
-    const token = session.tokens?.idToken?.toString() ?? session.tokens?.accessToken?.toString();
+    const token = session.tokens?.accessToken?.toString();
 
     if (!token) {
       return {

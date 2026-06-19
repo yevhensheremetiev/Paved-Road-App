@@ -12,7 +12,7 @@ export function createCognitoTokenVerifier({
 }: CognitoAuthConfig): TokenVerifier {
   const verifier = CognitoJwtVerifier.create({
     clientId: cognitoClientId,
-    tokenUse: null,
+    tokenUse: "access",
     userPoolId: cognitoUserPoolId
   });
 
