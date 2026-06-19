@@ -6,7 +6,7 @@ import type { WebConfig } from "../config";
 
 export type AuthenticatedSession = Extract<AuthSessionState, { status: "authenticated" }>;
 
-export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession) {
+export function useNotesWorkspace(config: WebConfig) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -15,15 +15,15 @@ export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession)
 
   const currentUserQuery = useQuery({
     queryKey: ["currentUser"],
-    queryFn: () => fetchCurrentUser(config.apiUrl, auth.token)
+    queryFn: () => fetchCurrentUser(config.apiUrl)
   });
   const notesQuery = useQuery({
     queryKey: ["notes"],
-    queryFn: () => fetchNotes(config.apiUrl, auth.token)
+    queryFn: () => fetchNotes(config.apiUrl)
   });
   const createNoteMutation = useMutation({
     mutationFn: () =>
-      createNote(config.apiUrl, auth.token, {
+      createNote(config.apiUrl, {
         content,
         title,
         urgency
@@ -39,7 +39,7 @@ export function useNotesWorkspace(config: WebConfig, auth: AuthenticatedSession)
     }
   });
   const deleteNoteMutation = useMutation({
-    mutationFn: (noteId: string) => deleteNote(config.apiUrl, auth.token, noteId),
+    mutationFn: (noteId: string) => deleteNote(config.apiUrl, noteId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["notes"]

@@ -1,3 +1,5 @@
+import { getAccessToken, redirectToLoginAfterUnauthorized } from "./auth";
+
 export type CurrentUserResponse = {
   user: {
     cognitoSub: string;
@@ -24,60 +26,66 @@ export type CreateNoteInput = {
   urgency: NoteUrgency;
 };
 
-function authHeaders(token: string) {
+async function authHeaders() {
+  const token = await getAccessToken();
+
   return {
     Authorization: `Bearer ${token}`
   };
 }
 
-export async function fetchCurrentUser(apiUrl: string, token: string) {
+async function ensureOkResponse(response: Response) {
+  if (response.ok) {
+    return;
+  }
+
+  if (response.status === 401) {
+    await redirectToLoginAfterUnauthorized();
+  }
+
+  throw new Error(`API returned ${response.status}`);
+}
+
+export async function fetchCurrentUser(apiUrl: string) {
   const response = await fetch(`${apiUrl}/me`, {
-    headers: authHeaders(token)
+    headers: await authHeaders()
   });
 
-  if (!response.ok) {
-    throw new Error(`API returned ${response.status}`);
-  }
+  await ensureOkResponse(response);
 
   return (await response.json()) as CurrentUserResponse;
 }
 
-export async function fetchNotes(apiUrl: string, token: string) {
+export async function fetchNotes(apiUrl: string) {
   const response = await fetch(`${apiUrl}/notes`, {
-    headers: authHeaders(token)
+    headers: await authHeaders()
   });
 
-  if (!response.ok) {
-    throw new Error(`API returned ${response.status}`);
-  }
+  await ensureOkResponse(response);
 
   return (await response.json()) as NotesResponse;
 }
 
-export async function createNote(apiUrl: string, token: string, input: CreateNoteInput) {
+export async function createNote(apiUrl: string, input: CreateNoteInput) {
   const response = await fetch(`${apiUrl}/notes`, {
     body: JSON.stringify(input),
     headers: {
-      ...authHeaders(token),
+      ...(await authHeaders()),
       "Content-Type": "application/json"
     },
     method: "POST"
   });
 
-  if (!response.ok) {
-    throw new Error(`API returned ${response.status}`);
-  }
+  await ensureOkResponse(response);
 
   return (await response.json()) as { note: Note };
 }
 
-export async function deleteNote(apiUrl: string, token: string, noteId: string) {
+export async function deleteNote(apiUrl: string, noteId: string) {
   const response = await fetch(`${apiUrl}/notes/${noteId}`, {
-    headers: authHeaders(token),
+    headers: await authHeaders(),
     method: "DELETE"
   });
 
-  if (!response.ok) {
-    throw new Error(`API returned ${response.status}`);
-  }
+  await ensureOkResponse(response);
 }
