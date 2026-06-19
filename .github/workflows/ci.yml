@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Playwright browsers
+        run: pnpm --filter @paved-road/web exec playwright install --with-deps chromium
+
       - name: Apply database migrations
         run: pnpm prisma:migrate:deploy
 
@@ -72,3 +75,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: End-to-end test
+        run: pnpm test:e2e

@@ -63,6 +63,12 @@ Run the local quality gate.
 pnpm verify
 ```
 
+Run frontend end-to-end tests.
+
+```bash
+pnpm test:e2e
+```
+
 Useful API checks:
 
 ```bash
@@ -79,6 +85,7 @@ Requests to authenticated API routes require a valid Cognito bearer token.
 - `pnpm dev:apps` - starts only the API and web app using `.env`.
 - `pnpm build` - runs available build scripts across workspaces.
 - `pnpm test` - runs available tests across workspaces.
+- `pnpm test:e2e` - runs Playwright end-to-end tests for the frontend.
 - `pnpm typecheck` - runs TypeScript project references.
 - `pnpm lint` - runs ESLint.
 - `pnpm format:check` - checks Prettier formatting.
@@ -98,7 +105,7 @@ GitHub Actions define the path from pull request to production:
 
 The CI workflow installs from `pnpm-lock.yaml`, runs against a real Postgres service, applies Prisma
 migrations to the test database, then checks formatting, linting, Prisma Client generation,
-TypeScript, production builds, Prisma schema validation, and tests.
+TypeScript, production builds, Prisma schema validation, tests, and frontend end-to-end tests.
 
 The deploy workflow generates the Prisma Client, applies production database migrations, optionally
 triggers Render and Amplify deploy hooks, then smoke-tests the API health endpoint.
