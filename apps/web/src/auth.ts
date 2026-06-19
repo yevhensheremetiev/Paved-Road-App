@@ -16,6 +16,7 @@ export type AuthSessionState =
 
 const e2eAuthEnabled = import.meta.env.VITE_E2E_AUTH === "true";
 const e2eAuthStateKey = "paved-road-e2e-auth-state";
+let unauthorizedRedirectStarted = false;
 
 export function configureAuth(config: WebConfig) {
   if (e2eAuthEnabled) {
@@ -80,6 +81,41 @@ export async function getAuthSession(): Promise<AuthSessionState> {
     return {
       status: "unauthenticated"
     };
+  }
+}
+
+export async function getAccessToken() {
+  if (e2eAuthEnabled) {
+    return import.meta.env.VITE_E2E_AUTH_TOKEN || "e2e-token";
+  }
+
+  const session = await fetchAuthSession();
+  const token = session.tokens?.accessToken?.toString();
+
+  if (!token) {
+    throw new Error("No access token available");
+  }
+
+  return token;
+}
+
+export async function redirectToLoginAfterUnauthorized() {
+  if (unauthorizedRedirectStarted) {
+    return;
+  }
+
+  unauthorizedRedirectStarted = true;
+
+  if (e2eAuthEnabled) {
+    window.localStorage.setItem(e2eAuthStateKey, "unauthenticated");
+    window.location.reload();
+    return;
+  }
+
+  try {
+    await signOut();
+  } finally {
+    await signInWithRedirect();
   }
 }
 

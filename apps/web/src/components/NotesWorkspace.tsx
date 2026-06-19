@@ -214,7 +214,7 @@ function NotesCard({ workspace }: NotesCardProps) {
 }
 
 export function NotesWorkspace({ auth, config }: NotesWorkspaceProps) {
-  const workspace = useNotesWorkspace(config, auth);
+  const workspace = useNotesWorkspace(config);
   const { currentUserQuery, notesQuery } = workspace;
 
   if (currentUserQuery.isError) {
