@@ -13,6 +13,7 @@ jobs:
   deploy:
     name: Migrate and smoke test
     runs-on: ubuntu-latest
+    environment: prod
 
     env:
       AMPLIFY_DEPLOY_HOOK_URL: ${{ secrets.AMPLIFY_DEPLOY_HOOK_URL }}
