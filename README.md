@@ -2,6 +2,8 @@
 
 Small full-stack application with a paved road from local development to CI/CD and production deploys.
 
+Live web app: https://main.d2ue44zb6z4n2a.amplifyapp.com/
+
 ## Stack
 
 - Monorepo: pnpm workspaces, TypeScript, ESLint, Prettier.
