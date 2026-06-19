@@ -7,8 +7,7 @@
     "prisma:validate": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" prisma validate --config prisma.config.ts",
     "prisma:migrate:dev": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" prisma migrate dev --config prisma.config.ts",
     "prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
-    "db:seed": "pnpm prisma:generate && DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" tsx prisma/seed.ts",
-    "db:reset": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" prisma migrate reset --config prisma.config.ts --force && pnpm db:seed",
+    "db:reset": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" prisma migrate reset --config prisma.config.ts --force",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -16,7 +15,6 @@
     "@prisma/client": "latest"
   },
   "devDependencies": {
-    "prisma": "latest",
-    "tsx": "latest"
+    "prisma": "latest"
   }
 }

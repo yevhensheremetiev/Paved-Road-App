@@ -12,7 +12,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:reset": "pnpm --filter @paved-road/database db:reset",
-    "db:seed": "pnpm --filter @paved-road/database db:seed",
     "prisma:generate": "pnpm --filter @paved-road/database prisma:generate",
     "prisma:migrate:dev": "pnpm --filter @paved-road/database prisma:migrate:dev",
     "prisma:migrate:deploy": "pnpm --filter @paved-road/database prisma:migrate:deploy",

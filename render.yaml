@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: paved-road-api
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm prisma:generate && pnpm --filter @paved-road/api build
+    startCommand: pnpm --filter @paved-road/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        sync: false
+      - key: COGNITO_USER_POOL_ID
+        sync: false
+      - key: COGNITO_CLIENT_ID
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

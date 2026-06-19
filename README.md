@@ -22,7 +22,7 @@ Start the local Postgres database:
 docker compose up -d postgres
 ```
 
-Apply migrations and seed local demo data:
+Apply local migrations:
 
 ```bash
 pnpm db:reset
@@ -70,14 +70,8 @@ pnpm dev:apps
 - `pnpm prisma:migrate:dev` - creates/applies local Prisma migrations.
 - `pnpm prisma:migrate:deploy` - applies existing migrations in deployed environments.
 - `pnpm prisma:validate` - validates the Prisma schema.
-- `pnpm db:seed` - seeds local development data.
-- `pnpm db:reset` - resets the local database, applies migrations, and seeds demo data.
+- `pnpm db:reset` - resets the local database and applies migrations.
 - `pnpm verify` - runs the baseline local quality gate.
-
-## Local Demo Data
-
-The database seed creates a demo user with Cognito subject `local-demo-user` and a couple
-of notes. The API maps verified Cognito token subjects to internal `User` records.
 
 ## API Development
 
@@ -123,6 +117,67 @@ CORS_ORIGIN=http://localhost:5173
 
 The SPA redirects to Cognito Hosted UI for login, receives a session after redirect, and
 calls the API with `Authorization: Bearer <Cognito JWT>`.
+
+## Deployment
+
+This repository includes deployment configuration for the first production path:
+
+- `amplify.yml` builds the React SPA from `apps/web` for AWS Amplify Hosting.
+- `render.yaml` defines the Render web service for the Node API.
+
+### AWS Amplify Hosting
+
+Connect the repository in Amplify Hosting and use the checked-in `amplify.yml`.
+
+Set these Amplify environment variables:
+
+```bash
+VITE_API_URL=<render-api-url>
+VITE_COGNITO_USER_POOL_ID=<user-pool-id>
+VITE_COGNITO_CLIENT_ID=<app-client-id>
+VITE_COGNITO_DOMAIN=<domain>.auth.<region>.amazoncognito.com
+```
+
+The build command is defined in `amplify.yml`:
+
+```bash
+pnpm --filter @paved-road/web build
+```
+
+For SPA routing, configure Amplify rewrites so unmatched routes serve `/index.html`.
+
+### Render API
+
+Create the API service from `render.yaml` or copy these values into the Render dashboard:
+
+```bash
+Build command: pnpm install --frozen-lockfile && pnpm prisma:generate && pnpm --filter @paved-road/api build
+Start command: pnpm --filter @paved-road/api start
+Health check path: /health
+```
+
+Set these Render environment variables:
+
+```bash
+DATABASE_URL=<neon-postgres-connection-string>
+COGNITO_USER_POOL_ID=<user-pool-id>
+COGNITO_CLIENT_ID=<app-client-id>
+CORS_ORIGIN=<amplify-app-url>
+```
+
+Render provides `PORT` automatically.
+
+### Database Migrations
+
+Use Neon Postgres for deployed environments. Run migrations before deploying API changes that
+depend on schema updates:
+
+```bash
+DATABASE_URL=<neon-postgres-connection-string> pnpm prisma:migrate:deploy
+```
+
+The next CI/CD commit should automate this migration step before triggering or promoting the API
+deployment.
 
 ## Target Stack
 

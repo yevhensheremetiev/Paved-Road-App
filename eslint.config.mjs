@@ -1,7 +1,7 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default [
   {
     ignores: [
       "**/node_modules/**",
@@ -23,6 +23,9 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: import.meta.dirname
       }
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error"
     }
   }
-);
+];

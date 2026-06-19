@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json --noEmit",
+    "start": "tsx src/server.ts",
     "test": "DATABASE_URL=\"${DATABASE_URL:-postgresql://paved_road:paved_road@localhost:5432/paved_road_dev?schema=public}\" vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -13,10 +14,10 @@
     "@prisma/client": "latest",
     "@fastify/cors": "latest",
     "aws-jwt-verify": "latest",
-    "fastify": "latest"
+    "fastify": "latest",
+    "tsx": "latest"
   },
   "devDependencies": {
-    "tsx": "latest",
     "vitest": "latest"
   }
 }
