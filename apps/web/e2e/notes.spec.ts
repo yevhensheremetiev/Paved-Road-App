@@ -26,7 +26,6 @@ async function mockNotesApi(page: Page, notes: Note[] = []) {
         json: {
           user: {
             cognitoSub: "e2e-user",
-            email: "e2e@example.com",
             id: "user-1"
           }
         }

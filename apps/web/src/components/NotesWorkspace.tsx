@@ -237,7 +237,7 @@ export function NotesWorkspace({ auth, config }: NotesWorkspaceProps) {
   return (
     <main className="app-shell">
       <WorkspaceHeader />
-      <ProfileCard email={currentUserQuery.data.user.email} username={auth.username} />
+      <ProfileCard email={auth.email} username={auth.username} />
       <NotesCard workspace={workspace} />
     </main>
   );

@@ -1,7 +1,6 @@
 export type CurrentUserResponse = {
   user: {
     cognitoSub: string;
-    email: string | null;
     id: string;
   };
 };
@@ -25,11 +24,15 @@ export type CreateNoteInput = {
   urgency: NoteUrgency;
 };
 
+function authHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`
+  };
+}
+
 export async function fetchCurrentUser(apiUrl: string, token: string) {
   const response = await fetch(`${apiUrl}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: authHeaders(token)
   });
 
   if (!response.ok) {
@@ -41,9 +44,7 @@ export async function fetchCurrentUser(apiUrl: string, token: string) {
 
 export async function fetchNotes(apiUrl: string, token: string) {
   const response = await fetch(`${apiUrl}/notes`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: authHeaders(token)
   });
 
   if (!response.ok) {
@@ -53,11 +54,15 @@ export async function fetchNotes(apiUrl: string, token: string) {
   return (await response.json()) as NotesResponse;
 }
 
-export async function createNote(apiUrl: string, token: string, input: CreateNoteInput) {
+export async function createNote(
+  apiUrl: string,
+  token: string,
+  input: CreateNoteInput
+) {
   const response = await fetch(`${apiUrl}/notes`, {
     body: JSON.stringify(input),
     headers: {
-      Authorization: `Bearer ${token}`,
+      ...authHeaders(token),
       "Content-Type": "application/json"
     },
     method: "POST"
@@ -72,9 +77,7 @@ export async function createNote(apiUrl: string, token: string, input: CreateNot
 
 export async function deleteNote(apiUrl: string, token: string, noteId: string) {
   const response = await fetch(`${apiUrl}/notes/${noteId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    },
+    headers: authHeaders(token),
     method: "DELETE"
   });
 

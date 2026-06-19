@@ -1,5 +1,5 @@
 import { CognitoJwtVerifier } from "aws-jwt-verify";
-import type { TokenVerifier, VerifiedTokenClaims } from "./auth.js";
+import type { TokenVerifier, VerifiedAccessTokenClaims } from "./auth.js";
 
 export type CognitoAuthConfig = {
   cognitoClientId: string;
@@ -10,20 +10,18 @@ export function createCognitoTokenVerifier({
   cognitoClientId,
   cognitoUserPoolId
 }: CognitoAuthConfig): TokenVerifier {
-  const verifier = CognitoJwtVerifier.create({
+  const accessTokenVerifier = CognitoJwtVerifier.create({
     clientId: cognitoClientId,
     tokenUse: "access",
     userPoolId: cognitoUserPoolId
   });
 
   return {
-    async verify(token: string): Promise<VerifiedTokenClaims> {
-      const payload = await verifier.verify(token);
-      const emailClaim = payload.email;
+    async verifyAccessToken(token: string): Promise<VerifiedAccessTokenClaims> {
+      const payload = await accessTokenVerifier.verify(token);
 
       return {
-        sub: payload.sub,
-        email: typeof emailClaim === "string" ? emailClaim : undefined
+        sub: payload.sub
       };
     }
   };
