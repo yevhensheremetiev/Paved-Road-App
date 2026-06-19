@@ -18,6 +18,36 @@ type LoadState =
       status: "error";
     };
 
+function getInitials(name: string) {
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => (part[0] ?? "").toUpperCase())
+    .join("");
+
+  return initials || "U";
+}
+
+function formatNoteCount(count: number) {
+  const label = count === 1 ? "note" : "notes";
+
+  return `${count} ${label}`;
+}
+
+function LoadingScreen({ label }: { label: string }) {
+  return (
+    <main className="app-shell loading-screen" aria-busy="true" aria-live="polite">
+      <div className="loader" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <span className="sr-only">{label}</span>
+    </main>
+  );
+}
+
 export function App() {
   const config = useMemo(() => loadWebConfig(), []);
   const queryClient = useQueryClient();
@@ -89,7 +119,7 @@ export function App() {
     event.preventDefault();
 
     if (title.trim().length === 0) {
-      setFormError("Title is required");
+      setFormError("Add a note title");
       return;
     }
 
@@ -121,11 +151,7 @@ export function App() {
   }, [config]);
 
   if (state.status === "loading") {
-    return (
-      <main className="app-shell">
-        <p>Loading authentication state...</p>
-      </main>
-    );
+    return <LoadingScreen label="Loading your session" />;
   }
 
   if (state.status === "error" || currentUserQuery.isError) {
@@ -139,7 +165,7 @@ export function App() {
     return (
       <main className="app-shell">
         <h1>Paved Road App</h1>
-        <p role="alert">Unable to load the authenticated API session: {message}</p>
+        <p role="alert">Unable to load the session: {message}</p>
         <button onClick={() => void logout()}>Sign out</button>
       </main>
     );
@@ -149,54 +175,54 @@ export function App() {
     return (
       <main className="app-shell">
         <h1>Paved Road App</h1>
-        <p>Sign in with Cognito to access the protected API.</p>
+        <p>Sign in to open your notes.</p>
         <button onClick={() => void login()}>Sign in</button>
       </main>
     );
   }
 
   if (currentUserQuery.isPending || notesQuery.isPending) {
-    return (
-      <main className="app-shell">
-        <p>Loading protected API data...</p>
-      </main>
-    );
+    return <LoadingScreen label="Loading your workspace" />;
   }
 
   const currentUser = currentUserQuery.data;
   const notes = notesQuery.data?.notes ?? [];
+  const email = currentUser.user.email;
+  const username = state.auth.username;
+  const initials = getInitials(username);
 
   return (
     <main className="app-shell">
       <header className="app-header">
         <div>
-          <h1>Paved Road App</h1>
-          <p>Authenticated through Cognito and verified by the API.</p>
+          <span className="eyebrow">Personal workspace</span>
+          <h1>My Notes</h1>
+          <p>Keep ideas, tasks, and quick reminders in one clean place.</p>
         </div>
-        <button onClick={() => void logout()}>Sign out</button>
+        <button className="secondary-button" onClick={() => void logout()}>
+          Sign out
+        </button>
       </header>
 
-      <section className="card">
-        <h2>Current User</h2>
-        <dl>
-          <dt>Frontend username</dt>
-          <dd>{state.auth.username}</dd>
-          <dt>API user id</dt>
-          <dd>{currentUser.user.id}</dd>
-          <dt>Cognito subject</dt>
-          <dd>{currentUser.user.cognitoSub}</dd>
-          <dt>Email</dt>
-          <dd>{currentUser.user.email ?? "Not provided"}</dd>
-        </dl>
+      <section className="card profile-card" aria-label="User profile">
+        <div className="profile-avatar" aria-hidden="true">
+          {initials}
+        </div>
+        <div className="profile-details">
+          <span className="eyebrow">Your profile</span>
+          <h2>{username}</h2>
+          <p>{email ?? "Email not provided"}</p>
+        </div>
       </section>
 
       <section className="card">
         <div className="section-header">
           <div>
+            <span className="eyebrow">Collection</span>
             <h2>Notes</h2>
-            <p>Create and manage notes owned by the authenticated API user.</p>
+            <p>Create short notes and quickly remove anything you no longer need.</p>
           </div>
-          <span className="pill">{notes.length} total</span>
+          <span className="pill">{formatNoteCount(notes.length)}</span>
         </div>
 
         <form className="note-form" onSubmit={handleCreateNote}>
@@ -204,7 +230,7 @@ export function App() {
             Title
             <input
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Release checklist"
+              placeholder="For example, daily plan"
               value={title}
             />
           </label>
@@ -212,7 +238,7 @@ export function App() {
             Content
             <textarea
               onChange={(event) => setContent(event.target.value)}
-              placeholder="Write the next step..."
+              placeholder="Write an idea, task, or reminder..."
               rows={4}
               value={content}
             />
@@ -226,23 +252,26 @@ export function App() {
           ) : null}
 
           <button disabled={createNoteMutation.isPending} type="submit">
-            {createNoteMutation.isPending ? "Creating..." : "Create note"}
+            {createNoteMutation.isPending ? "Creating..." : "Add note"}
           </button>
         </form>
 
         {notesQuery.isError ? (
           <p className="error-message" role="alert">
-            Failed to load notes. Please refresh and try again.
+            Failed to load notes. Refresh the page and try again.
           </p>
         ) : notes.length === 0 ? (
-          <p className="empty-state">No notes yet. Create the first one above.</p>
+          <div className="empty-state">
+            <h3>Nothing here yet</h3>
+            <p>Add your first note above, and it will appear in this collection.</p>
+          </div>
         ) : (
           <ul className="note-list">
             {notes.map((note) => (
               <li className="note-item" key={note.id}>
-                <div>
+                <div className="note-content">
                   <h3>{note.title}</h3>
-                  <p>{note.content ?? "No content provided."}</p>
+                  <p>{note.content ?? "No additional content."}</p>
                 </div>
                 <button
                   className="secondary-button"
