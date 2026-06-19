@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../src/app.js";
-import type { TokenVerifier, VerifiedTokenClaims } from "../src/auth/auth.js";
+import type { TokenVerifier, VerifiedAccessTokenClaims } from "../src/auth/auth.js";
 import { createPrismaClient, type Prisma } from "../src/db.js";
 
 const demoCognitoSub = "local-demo-user";
@@ -15,34 +15,52 @@ let prisma: Prisma | undefined;
 let ownNoteId: string;
 let otherNoteId: string;
 
-const tokenClaims = new Map<string, VerifiedTokenClaims>([
+const accessTokenClaims = new Map<string, VerifiedAccessTokenClaims>([
   [
     validDemoToken,
     {
-      sub: demoCognitoSub,
-      email: "demo@example.com"
+      sub: demoCognitoSub
     }
   ],
   [
     validOtherToken,
     {
-      sub: otherCognitoSub,
-      email: "other@example.com"
+      sub: otherCognitoSub
     }
   ]
 ]);
 
 const fakeTokenVerifier: TokenVerifier = {
-  async verify(token) {
-    const claims = tokenClaims.get(token);
+  async verifyAccessToken(token) {
+    const claims = accessTokenClaims.get(token);
 
     if (!claims) {
-      throw new Error("Invalid token");
+      throw new Error("Invalid access token");
     }
 
     return claims;
   }
 };
+
+function assertIsolatedTestDatabase() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("API tests require DATABASE_URL to point at an isolated test database.");
+  }
+
+  const url = new URL(databaseUrl);
+  const databaseName = url.pathname.replace(/^\//, "");
+  const schema = url.searchParams.get("schema") ?? "public";
+  const usesTestDatabase = databaseName.toLowerCase().includes("test");
+  const usesTestSchema = schema.toLowerCase().includes("test");
+
+  if (!usesTestDatabase && !usesTestSchema) {
+    throw new Error(
+      "API tests require DATABASE_URL to use a test database or test schema before deleting data."
+    );
+  }
+}
 
 async function seedTestData(prismaClient: Prisma) {
   await prismaClient.note.deleteMany();
@@ -107,6 +125,7 @@ function getPrisma() {
 }
 
 beforeEach(async () => {
+  assertIsolatedTestDatabase();
   prisma = createPrismaClient();
   await seedTestData(prisma);
   app = buildApp({ corsOrigin, logger: false, prisma, tokenVerifier: fakeTokenVerifier });
@@ -152,6 +171,7 @@ describe("notes API", () => {
 
     expect(response.statusCode).toBe(204);
     expect(response.headers["access-control-allow-methods"]).toContain("DELETE");
+    expect(response.headers["access-control-allow-headers"]).toContain("Authorization");
     expect(response.headers["access-control-allow-origin"]).toBe(corsOrigin);
   });
 
@@ -177,7 +197,74 @@ describe("notes API", () => {
     expect(response.statusCode).toBe(401);
   });
 
-  it("upserts local users from verified token claims", async () => {
+  it("reports user sync failures as server errors after token verification succeeds", async () => {
+    const failingPrisma = {
+      $disconnect: vi.fn(),
+      user: {
+        findUnique: vi.fn().mockRejectedValue(new Error("Database unavailable"))
+      }
+    } as unknown as Prisma;
+    const failingApp = buildApp({
+      corsOrigin,
+      logger: false,
+      prisma: failingPrisma,
+      tokenVerifier: fakeTokenVerifier
+    });
+
+    try {
+      const response = await failingApp.inject({
+        method: "GET",
+        url: "/me",
+        headers: authHeaders()
+      });
+
+      expect(response.statusCode).toBe(500);
+      expect(response.json()).toEqual({
+        error: "Failed to authenticate user"
+      });
+    } finally {
+      await failingApp.close();
+    }
+  });
+
+  it("reuses existing local users without writing on each authenticated request", async () => {
+    const existingUser = {
+      cognitoSub: demoCognitoSub,
+      id: "existing-user-id"
+    };
+    const create = vi.fn();
+    const existingUserPrisma = {
+      $disconnect: vi.fn(),
+      user: {
+        create,
+        findUnique: vi.fn().mockResolvedValue(existingUser)
+      }
+    } as unknown as Prisma;
+    const existingUserApp = buildApp({
+      corsOrigin,
+      logger: false,
+      prisma: existingUserPrisma,
+      tokenVerifier: fakeTokenVerifier
+    });
+
+    try {
+      const response = await existingUserApp.inject({
+        method: "GET",
+        url: "/me",
+        headers: authHeaders()
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        user: existingUser
+      });
+      expect(create).not.toHaveBeenCalled();
+    } finally {
+      await existingUserApp.close();
+    }
+  });
+
+  it("creates local users from verified access token claims", async () => {
     await getPrisma().note.deleteMany();
     await getPrisma().user.deleteMany();
 
@@ -190,8 +277,7 @@ describe("notes API", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({
       user: {
-        cognitoSub: demoCognitoSub,
-        email: "demo@example.com"
+        cognitoSub: demoCognitoSub
       }
     });
 
@@ -202,7 +288,7 @@ describe("notes API", () => {
         }
       })
     ).resolves.toMatchObject({
-      email: "demo@example.com"
+      email: null
     });
   });
 
@@ -216,8 +302,7 @@ describe("notes API", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({
       user: {
-        cognitoSub: demoCognitoSub,
-        email: "demo@example.com"
+        cognitoSub: demoCognitoSub
       }
     });
   });

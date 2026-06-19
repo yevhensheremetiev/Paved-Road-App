@@ -5,6 +5,7 @@ import type { WebConfig } from "./config";
 
 export type AuthSessionState =
   | {
+      email: string | null;
       status: "authenticated";
       token: string;
       username: string;
@@ -49,6 +50,7 @@ export async function getAuthSession(): Promise<AuthSessionState> {
     }
 
     return {
+      email: import.meta.env.VITE_E2E_EMAIL || "e2e@example.com",
       status: "authenticated",
       token: import.meta.env.VITE_E2E_AUTH_TOKEN || "e2e-token",
       username: import.meta.env.VITE_E2E_USERNAME || "E2E User"
@@ -58,14 +60,18 @@ export async function getAuthSession(): Promise<AuthSessionState> {
   try {
     const [currentUser, session] = await Promise.all([getCurrentUser(), fetchAuthSession()]);
     const token = session.tokens?.accessToken?.toString();
+    const idToken = session.tokens?.idToken;
 
-    if (!token) {
+    if (!token || !idToken) {
       return {
         status: "unauthenticated"
       };
     }
 
+    const emailClaim = idToken.payload.email;
+
     return {
+      email: typeof emailClaim === "string" ? emailClaim : null,
       status: "authenticated",
       token,
       username: currentUser.username

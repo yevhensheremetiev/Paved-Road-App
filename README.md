@@ -63,6 +63,9 @@ Run the local quality gate.
 pnpm verify
 ```
 
+API tests apply migrations to `TEST_DATABASE_URL`, defaulting to the `api_test` Postgres schema,
+before clearing and seeding test data.
+
 Run frontend end-to-end tests.
 
 ```bash
