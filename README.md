@@ -179,6 +179,52 @@ DATABASE_URL=<neon-postgres-connection-string> pnpm prisma:migrate:deploy
 The next CI/CD commit should automate this migration step before triggering or promoting the API
 deployment.
 
+## CI/CD
+
+GitHub Actions define the paved road from pull request to deployed infrastructure:
+
+- `.github/workflows/ci.yml` runs quality gates for pull requests and pushes to `main`.
+- `.github/workflows/deploy.yml` runs production migrations, optional deploy hooks, and an API
+  health smoke test on pushes to `main`.
+
+### Pull Request Gates
+
+The CI workflow runs against a real Postgres service and checks:
+
+- install from `pnpm-lock.yaml`;
+- Prisma migrations against the test database;
+- formatting;
+- linting;
+- Prisma Client generation;
+- TypeScript;
+- production builds;
+- Prisma schema validation;
+- API integration tests.
+
+### GitHub Secrets
+
+Create these repository secrets before relying on the deploy workflow:
+
+```bash
+DATABASE_URL=<neon-postgres-connection-string>
+API_URL=<render-api-url>
+```
+
+Optional deploy hook secrets:
+
+```bash
+RENDER_DEPLOY_HOOK_URL=<render-deploy-hook-url>
+AMPLIFY_DEPLOY_HOOK_URL=<amplify-deploy-hook-url>
+```
+
+If Render and Amplify are already configured for auto-deploy on `main`, the deploy hook secrets can
+be omitted. The workflow will still run migrations and smoke-test the API.
+
+### Branch Protection
+
+Require the `CI / Quality gates` check before merging pull requests into `main`. This ensures broken
+builds, invalid migrations, failing tests, or formatting/lint issues block deployment.
+
 ## Target Stack
 
 - Frontend: React SPA on AWS Amplify Hosting
