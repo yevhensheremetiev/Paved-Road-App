@@ -120,9 +120,11 @@ test("creates and deletes a note", async ({ page }) => {
   await page.getByLabel("Urgency").selectOption("URGENT");
   await page.getByRole("button", { name: "Add note" }).click();
 
-  await expect(page.getByRole("heading", { name: "Daily plan" })).toBeVisible();
-  await expect(page.getByText("Urgent")).toBeVisible();
-  await expect(page.getByText("Ship the Playwright coverage")).toBeVisible();
+  const note = page.getByRole("listitem").filter({ hasText: "Daily plan" });
+
+  await expect(note.getByRole("heading", { name: "Daily plan" })).toBeVisible();
+  await expect(note.getByText("Urgent")).toBeVisible();
+  await expect(note.getByText("Ship the Playwright coverage")).toBeVisible();
   await expect(page.getByText("1 note")).toBeVisible();
 
   await page.getByRole("button", { name: "Delete" }).click();
