@@ -336,6 +336,7 @@ select {
   display: flex;
   gap: 0.75rem;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .note-urgency {
@@ -370,13 +371,22 @@ select {
   letter-spacing: -0.02em;
   line-height: 1.25;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .note-item p {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   color: #475569;
+  display: -webkit-box;
   line-height: 1.65;
   margin: 0.5rem 0 0;
-  white-space: pre-wrap;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .secondary-button {
