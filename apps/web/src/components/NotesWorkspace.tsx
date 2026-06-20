@@ -150,27 +150,31 @@ function NotesList({
 
   return (
     <ul className="note-list">
-      {notes.map((note) => (
-        <li className="note-item" key={note.id}>
-          <div className="note-content">
-            <div className="note-title-row">
-              <h3>{note.title}</h3>
-              <span className={urgencyBadges[note.urgency].className}>
-                {urgencyBadges[note.urgency].label}
-              </span>
+      {notes.map((note) => {
+        const noteContent = note.content ?? "No additional content.";
+
+        return (
+          <li className="note-item" key={note.id}>
+            <div className="note-content">
+              <div className="note-title-row">
+                <h3 title={note.title}>{note.title}</h3>
+                <span className={urgencyBadges[note.urgency].className}>
+                  {urgencyBadges[note.urgency].label}
+                </span>
+              </div>
+              <p title={noteContent}>{noteContent}</p>
             </div>
-            <p>{note.content ?? "No additional content."}</p>
-          </div>
-          <button
-            className="secondary-button"
-            disabled={deleteNoteMutation.isPending}
-            onClick={() => deleteNoteMutation.mutate(note.id)}
-            type="button"
-          >
-            Delete
-          </button>
-        </li>
-      ))}
+            <button
+              className="secondary-button"
+              disabled={deleteNoteMutation.isPending}
+              onClick={() => deleteNoteMutation.mutate(note.id)}
+              type="button"
+            >
+              Delete
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }
